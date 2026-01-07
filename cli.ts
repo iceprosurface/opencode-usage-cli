@@ -31,9 +31,11 @@ program
   .option('--csv', 'Output in CSV format')
   .option('-s, --sessions', 'Show session breakdown')
   .option('-r, --reverse', 'Reverse sort order (oldest first)')
+  .option('-c, --current-only [value]', 'Filter sessions from current working directory only')
   .action(async (options) => {
     try {
-      const result = await analyzeUsage({ ...options, groupByProject: options.instances, projectExact: options.exactPath });
+      const currentOnlyValue = options.currentOnly === true || options.currentOnly === 'true';
+      const result = await analyzeUsage({ ...options, groupByProject: options.instances, projectExact: options.exactPath, currentOnly: currentOnlyValue });
 
       if (options.json) {
         console.log(JSON.stringify(result, null, 2));
@@ -58,9 +60,11 @@ program
   .option('-i, --instances', 'Show usage breakdown by project/instance')
   .option('--json', 'Output in JSON format')
   .option('--breakdown', 'Show model breakdown')
+  .option('-c, --current-only [value]', 'Filter sessions from current working directory only')
   .action(async (options) => {
     try {
-      const dailyData = await analyzeDailyUsage({ ...options, groupByProject: options.instances, projectExact: options.exactPath });
+      const currentOnlyValue = options.currentOnly === true || options.currentOnly === 'true';
+      const dailyData = await analyzeDailyUsage({ ...options, groupByProject: options.instances, projectExact: options.exactPath, currentOnly: currentOnlyValue });
 
       if (dailyData.length === 0) {
         console.warn('No usage data found.');
@@ -97,9 +101,11 @@ program
   .option('-i, --instances', 'Show usage breakdown by project/instance')
   .option('--json', 'Output in JSON format')
   .option('--breakdown', 'Show model breakdown')
+  .option('-c, --current-only [value]', 'Filter sessions from current working directory only')
   .action(async (options) => {
     try {
-      const monthlyData = await analyzeMonthlyUsage({ ...options, groupByProject: options.instances, projectExact: options.exactPath });
+      const currentOnlyValue = options.currentOnly === true || options.currentOnly === 'true';
+      const monthlyData = await analyzeMonthlyUsage({ ...options, groupByProject: options.instances, projectExact: options.exactPath, currentOnly: currentOnlyValue });
 
       if (monthlyData.length === 0) {
         console.warn('No usage data found.');

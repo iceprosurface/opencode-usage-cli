@@ -128,10 +128,12 @@ export interface AnalyzeOptions {
   reverse?: boolean;
   groupByProject?: boolean;
   instances?: boolean;
+  currentOnly?: boolean;
+  currentPath?: string;
 }
 
 export async function analyzeUsage(options: AnalyzeOptions = {}): Promise<AnalysisResult> {
-  const { days = 7, model, project, projectExact = false, summary = false, reverse = false } = options;
+  const { days = 7, model, project, projectExact = false, summary = false, reverse = false, currentOnly = false, currentPath } = options;
 
   const sessions = [];
   const messageDir = path.join(OPENCODE_STORAGE_PATH, 'message');
@@ -199,6 +201,18 @@ export async function analyzeUsage(options: AnalyzeOptions = {}): Promise<Analys
             if (!projectPath.includes(projectPattern)) {
               continue;
             }
+          }
+        }
+
+        if (currentOnly && message.path?.root) {
+          const workingDir = (currentPath || process.cwd()).toLowerCase();
+          const messagePath = message.path.root.toLowerCase();
+          const workingDirWithSlash = workingDir.endsWith('/') ? workingDir : workingDir + '/';
+          const messagePathWithSlash = messagePath.endsWith('/') ? messagePath : messagePath + '/';
+
+          if (!messagePathWithSlash.startsWith(workingDirWithSlash) &&
+              !workingDirWithSlash.startsWith(messagePathWithSlash)) {
+            continue;
           }
         }
 
@@ -322,7 +336,7 @@ export async function analyzeUsage(options: AnalyzeOptions = {}): Promise<Analys
 }
 
 export async function analyzeDailyUsage(options: AnalyzeOptions = {}): Promise<DailyData[]> {
-  const { days = 7, model, project, projectExact = false } = options;
+  const { days = 7, model, project, projectExact = false, currentOnly = false, currentPath } = options;
 
   const sessions = [];
   const messageDir = path.join(OPENCODE_STORAGE_PATH, 'message');
@@ -360,6 +374,18 @@ export async function analyzeDailyUsage(options: AnalyzeOptions = {}): Promise<D
 
         if (project && message.path?.root && !message.path.root.toLowerCase().includes(project.toLowerCase())) {
           continue;
+        }
+
+        if (currentOnly && message.path?.root) {
+          const workingDir = (currentPath || process.cwd()).toLowerCase();
+          const messagePath = message.path.root.toLowerCase();
+          const workingDirWithSlash = workingDir.endsWith('/') ? workingDir : workingDir + '/';
+          const messagePathWithSlash = messagePath.endsWith('/') ? messagePath : messagePath + '/';
+
+          if (!messagePathWithSlash.startsWith(workingDirWithSlash) &&
+              !workingDirWithSlash.startsWith(messagePathWithSlash)) {
+            continue;
+          }
         }
 
         if (message.role === 'assistant') {
@@ -425,7 +451,7 @@ export async function analyzeDailyUsage(options: AnalyzeOptions = {}): Promise<D
 }
 
 export async function analyzeMonthlyUsage(options: AnalyzeOptions = {}): Promise<MonthlyData[]> {
-  const { days = 30, model, project, projectExact = false } = options;
+  const { days = 30, model, project, projectExact = false, currentOnly = false, currentPath } = options;
 
   const sessions = [];
   const messageDir = path.join(OPENCODE_STORAGE_PATH, 'message');
@@ -463,6 +489,18 @@ export async function analyzeMonthlyUsage(options: AnalyzeOptions = {}): Promise
 
         if (project && message.path?.root && !message.path.root.toLowerCase().includes(project.toLowerCase())) {
           continue;
+        }
+
+        if (currentOnly && message.path?.root) {
+          const workingDir = (currentPath || process.cwd()).toLowerCase();
+          const messagePath = message.path.root.toLowerCase();
+          const workingDirWithSlash = workingDir.endsWith('/') ? workingDir : workingDir + '/';
+          const messagePathWithSlash = messagePath.endsWith('/') ? messagePath : messagePath + '/';
+
+          if (!messagePathWithSlash.startsWith(workingDirWithSlash) &&
+              !workingDirWithSlash.startsWith(messagePathWithSlash)) {
+            continue;
+          }
         }
 
         if (message.role === 'assistant') {

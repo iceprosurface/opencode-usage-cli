@@ -75,6 +75,18 @@ opencode-usage analyze -p ~/projects/my-app --exact-path
 opencode-usage analyze -p ~/projects/my-app --exact-path --instances
 ```
 
+### 按当前工作目录过滤
+
+```bash
+# 仅显示当前工作目录的会话
+opencode-usage analyze --current-only
+opencode-usage daily --current-only
+opencode-usage monthly --current-only
+
+# 与时间范围结合使用
+opencode-usage analyze -d 30 --current-only
+```
+
 ### 显示会话明细
 
 ```bash
@@ -265,53 +277,26 @@ By Path (when using --instances):
 mkdir -p ~/.config/opencode/command
 ```
 
-2. 创建 `status.md` 文件，内容如下：
+2. 创建 `opencode-usage.md` 文件，内容如下：
 
 ```bash
-cat > ~/.config/opencode/command/status.md << 'EOF'
+cat > ~/.config/opencode/command/opencode-usage.md << 'EOF'
 ---
 description: 显示 OpenCode 使用统计
+arguments: $1 (天数, 可选) $2 (仅当前目录, 可选)
 ---
 
-以下是当前的 OpenCode 使用统计：
-!\`opencode-usage-cli analyze\`
-
-总结此使用数据的关键见解，包括：
-- 总会话数和消息数
-- Token 使用趋势
-- 按模型的成本分析
-- 任何值得注意的模式或异常
+!\`opencode-usage-cli analyze -d $1 --current-only=$2\`
 EOF
 ```
 
-3. 现在你可以直接在 OpenCode TUI 中使用 `/status` 命令了！
+3. 现在你可以直接在 OpenCode TUI 中使用 `/opencode-usage` 命令了！
 
 ```
-/status
-```
-
-### 高级用法
-
-你还可以自定义命令以支持参数，例如查看特定时间范围：
-
-```bash
-cat > ~/.config/opencode/command/status.md << 'EOF'
----
-description: 显示 OpenCode 使用统计
-arguments: $1 (天数, 可选)
----
-
-!\`opencode-usage-cli analyze -d $1\`
-
-总结使用数据。
-EOF
-```
-
-使用方法：
-```
-/status       # 显示最近 7 天（默认）
-/status 30     # 显示最近 30 天
-/status 90     # 显示最近 90 天
+/opencode-usage              # 显示最近 7 天（默认）
+/opencode-usage 30           # 显示最近 30 天
+/opencode-usage 90           # 显示最近 90 天
+/opencode-usage 30 true      # 显示最近 30 天，仅当前目录
 ```
 
 ## 许可证

@@ -75,6 +75,18 @@ opencode-usage analyze -p ~/projects/my-app --exact-path
 opencode-usage analyze -p ~/projects/my-app --exact-path --instances
 ```
 
+### Filter by Current Working Directory
+
+```bash
+# Only show sessions from current working directory
+opencode-usage analyze --current-only
+opencode-usage daily --current-only
+opencode-usage monthly --current-only
+
+# Combine with time range
+opencode-usage analyze -d 30 --current-only
+```
+
 ### Show Session Breakdown
 
 ```bash
@@ -267,54 +279,32 @@ You can create a custom slash command in OpenCode to view usage statistics direc
 mkdir -p ~/.config/opencode/command
 ```
 
-2. Create a `status.md` file with the following content:
+2. Create an `opencode-usage.md` file with the following content:
 
 ```bash
-cat > ~/.config/opencode/command/status.md << 'EOF'
+cat > ~/.config/opencode/command/opencode-usage.md << 'EOF'
 ---
 description: Show OpenCode usage statistics
+arguments: $1 (days, optional) $2 (current-only, optional)
 ---
 
-Here are the current OpenCode usage statistics:
-!\`opencode-usage-cli analyze\`
-
-Summarize the key insights from this usage data, including:
-- Total sessions and messages
-- Token usage trends
-- Cost analysis by model
-- Any notable patterns or anomalies
+!\`opencode-usage-cli analyze -d $1 --current-only=$2\`
 EOF
 ```
 
-3. Now you can use the `/status` command directly in OpenCode TUI!
+3. Now you can use the `/opencode-usage` command directly in OpenCode TUI!
 
 ```
-/status
+/opencode-usage              # Show last 7 days (default)
+/opencode-usage 30           # Show last 30 days
+/opencode-usage 90           # Show last 90 days
+/opencode-usage 30 true      # Show last 30 days, current directory only
+```
+/opencode-usage       # Show last 7 days (default)
+/opencode-usage 30    # Show last 30 days
 ```
 
-### Advanced Usage
 
-You can also customize the command to support parameters, like viewing a specific time range:
-
-```bash
-cat > ~/.config/opencode/command/status.md << 'EOF'
----
-description: Show OpenCode usage statistics
-arguments: $1 (days, optional)
----
-
-!\`opencode-usage-cli analyze -d $1\`
-
-Summarize the usage data.
-EOF
-```
-
-Usage:
-```
-/status       # Show last 7 days (default)
-/status 30     # Show last 30 days
-/status 90     # Show last 90 days
-```
 
 ## License
 
