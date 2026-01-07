@@ -1,6 +1,6 @@
 {
   "name": "opencode-usage-cli",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A CLI tool for analyzing OpenCode session usage and costs",
   "type": "module",
   "main": "./dist/analyzer.js",
