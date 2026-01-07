@@ -1,3 +1,5 @@
+[English](README.md) | [中文](README.zh-CN.md)
+
 # OpenCode Usage
 
 一个用于分析 OpenCode 会话使用情况和成本的 CLI 工具，类似于 ccusage。
@@ -19,13 +21,13 @@
 ### 通过 npm 全局安装
 
 ```bash
-npm install -g opencode-usage
+npm install -g opencode-usage-cli
 ```
 
 ### 或本地安装
 
 ```bash
-npm install opencode-usage
+npm install opencode-usage-cli
 ```
 
 ## 使用方法

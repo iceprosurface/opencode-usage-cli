@@ -1,3 +1,5 @@
+[English](README.md) | [中文](README.zh-CN.md)
+
 # OpenCode Usage
 
 A CLI tool for analyzing OpenCode session usage and costs, similar to ccusage.
