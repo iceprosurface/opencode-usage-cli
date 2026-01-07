@@ -1,5 +1,5 @@
 {
-  "name": "opencode-usage",
+  "name": "opencode-usage-cli",
   "version": "1.0.0",
   "description": "A CLI tool for analyzing OpenCode session usage and costs",
   "type": "module",

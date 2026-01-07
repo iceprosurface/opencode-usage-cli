@@ -19,13 +19,13 @@ A CLI tool for analyzing OpenCode session usage and costs, similar to ccusage.
 ### Install globally via npm
 
 ```bash
-npm install -g @yourusername/opencode-usage
+npm install -g opencode-usage-cli
 ```
 
 ### Or install locally
 
 ```bash
-npm install @yourusername/opencode-usage
+npm install opencode-usage-cli
 ```
 
 ## Usage
