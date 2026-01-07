@@ -1,0 +1,26 @@
+# Source files
+*.ts
+tsconfig.json
+tsup.config.ts
+
+# Dev dependencies
+node_modules/
+
+# Git
+.git
+.gitignore
+.github
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Build artifacts (we include dist explicitly in package.json)
+dist/
+
+# Misc
+.DS_Store
+*.log
+LICENSE
