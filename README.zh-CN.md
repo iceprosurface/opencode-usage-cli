@@ -114,7 +114,7 @@ opencode-usage analyze -p /Users/yourname/projects/my-app --exact-path --instanc
 
 ### 导出格式
 
-```json
+```bash
 # JSON 输出
 opencode-usage analyze --json > usage.json
 

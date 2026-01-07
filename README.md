@@ -114,7 +114,7 @@ opencode-usage analyze -p /Users/yourname/projects/my-app --exact-path --instanc
 
 ### Export Formats
 
-```json
+```bash
 # JSON output
 opencode-usage analyze --json > usage.json
 
@@ -261,8 +261,6 @@ By Path (when using --instances):
 
 ## Data Source
 
-## Data Source
-
 The tool reads OpenCode session data from:
 - Messages: `~/.local/share/opencode/storage/message/`
 - Sessions: `~/.local/share/opencode/storage/session/`
@@ -294,17 +292,12 @@ EOF
 
 3. Now you can use the `/opencode-usage` command directly in OpenCode TUI!
 
-```
+```bash
 /opencode-usage              # Show last 7 days (default)
 /opencode-usage 30           # Show last 30 days
 /opencode-usage 90           # Show last 90 days
 /opencode-usage 30 true      # Show last 30 days, current directory only
 ```
-/opencode-usage       # Show last 7 days (default)
-/opencode-usage 30    # Show last 30 days
-```
-
-
 
 ## License
 
