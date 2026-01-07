@@ -255,6 +255,67 @@ The tool reads OpenCode session data from:
 - Messages: `~/.local/share/opencode/storage/message/`
 - Sessions: `~/.local/share/opencode/storage/session/`
 
+## OpenCode Integration
+
+You can create a custom slash command in OpenCode to view usage statistics directly.
+
+### Quick Setup
+
+1. Create the global command directory:
+
+```bash
+mkdir -p ~/.config/opencode/command
+```
+
+2. Create a `status.md` file with the following content:
+
+```bash
+cat > ~/.config/opencode/command/status.md << 'EOF'
+---
+description: Show OpenCode usage statistics
+---
+
+Here are the current OpenCode usage statistics:
+!\`opencode-usage-cli analyze\`
+
+Summarize the key insights from this usage data, including:
+- Total sessions and messages
+- Token usage trends
+- Cost analysis by model
+- Any notable patterns or anomalies
+EOF
+```
+
+3. Now you can use the `/status` command directly in OpenCode TUI!
+
+```
+/status
+```
+
+### Advanced Usage
+
+You can also customize the command to support parameters, like viewing a specific time range:
+
+```bash
+cat > ~/.config/opencode/command/status.md << 'EOF'
+---
+description: Show OpenCode usage statistics
+arguments: $1 (days, optional)
+---
+
+!\`opencode-usage-cli analyze -d $1\`
+
+Summarize the usage data.
+EOF
+```
+
+Usage:
+```
+/status       # Show last 7 days (default)
+/status 30     # Show last 30 days
+/status 90     # Show last 90 days
+```
+
 ## License
 
 MIT

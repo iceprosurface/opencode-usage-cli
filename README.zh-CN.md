@@ -253,6 +253,67 @@ By Path (when using --instances):
 - 消息：`~/.local/share/opencode/storage/message/`
 - 会话：`~/.local/share/opencode/storage/session/`
 
+## OpenCode 集成
+
+你可以在 OpenCode 中创建自定义 slash 命令来直接查看使用统计。
+
+### 快速设置
+
+1. 创建全局命令目录：
+
+```bash
+mkdir -p ~/.config/opencode/command
+```
+
+2. 创建 `status.md` 文件，内容如下：
+
+```bash
+cat > ~/.config/opencode/command/status.md << 'EOF'
+---
+description: 显示 OpenCode 使用统计
+---
+
+以下是当前的 OpenCode 使用统计：
+!\`opencode-usage-cli analyze\`
+
+总结此使用数据的关键见解，包括：
+- 总会话数和消息数
+- Token 使用趋势
+- 按模型的成本分析
+- 任何值得注意的模式或异常
+EOF
+```
+
+3. 现在你可以直接在 OpenCode TUI 中使用 `/status` 命令了！
+
+```
+/status
+```
+
+### 高级用法
+
+你还可以自定义命令以支持参数，例如查看特定时间范围：
+
+```bash
+cat > ~/.config/opencode/command/status.md << 'EOF'
+---
+description: 显示 OpenCode 使用统计
+arguments: $1 (天数, 可选)
+---
+
+!\`opencode-usage-cli analyze -d $1\`
+
+总结使用数据。
+EOF
+```
+
+使用方法：
+```
+/status       # 显示最近 7 天（默认）
+/status 30     # 显示最近 30 天
+/status 90     # 显示最近 90 天
+```
+
 ## 许可证
 
 MIT
