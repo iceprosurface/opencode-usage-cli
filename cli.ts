@@ -259,7 +259,7 @@ function printDailyReport(dailyData: DailyData[], options: any) {
         table.push(row);
 
         if (options.breakdown) {
-          pushBreakdownRows(table, data.modelBreakdowns);
+          pushBreakdownRows(table, data.modelBreakdowns, 0, 0, true);
         }
       }
 
@@ -278,7 +278,7 @@ function printDailyReport(dailyData: DailyData[], options: any) {
       table.push(row);
 
       if (options.breakdown) {
-        pushBreakdownRows(table, data.modelBreakdowns);
+        pushBreakdownRows(table, data.modelBreakdowns, 1, 0, false);
       }
     }
   }
@@ -331,7 +331,7 @@ function printMonthlyReport(monthlyData: MonthlyData[], options: any) {
         '', '', '', '', '', '', ''
       ]);
 
-      for (const data of projectData as MonthlyData[]) {
+       for (const data of projectData as MonthlyData[]) {
         const row = formatUsageDataRow(data.month, {
           inputTokens: data.inputTokens,
           outputTokens: data.outputTokens,
@@ -343,7 +343,7 @@ function printMonthlyReport(monthlyData: MonthlyData[], options: any) {
         table.push(row);
 
         if (options.breakdown) {
-          pushBreakdownRows(table, data.modelBreakdowns);
+          pushBreakdownRows(table, data.modelBreakdowns, 0, 0, true);
         }
       }
 
@@ -362,7 +362,7 @@ function printMonthlyReport(monthlyData: MonthlyData[], options: any) {
       table.push(row);
 
       if (options.breakdown) {
-        pushBreakdownRows(table, data.modelBreakdowns);
+        pushBreakdownRows(table, data.modelBreakdowns, 1, 0, false);
       }
     }
   }

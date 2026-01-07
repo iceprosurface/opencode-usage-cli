@@ -10,7 +10,10 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui"
   },
   "files": [
     "dist"
@@ -40,7 +43,9 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@vitest/ui": "^4.0.16",
     "tsup": "^8.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^4.0.16"
   }
 }

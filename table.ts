@@ -378,9 +378,16 @@ export function pushBreakdownRows(
 	}>,
 	extraColumns = 1,
 	trailingColumns = 0,
-): void {
+	firstColumnEmpty = false,
+ ): void {
 	for (const breakdown of breakdowns) {
-		const row: (string | number)[] = [`  └─ ${formatModelName(breakdown.modelName)}`];
+		const row: (string | number)[] = firstColumnEmpty
+			? ['']
+			: [`  └─ ${formatModelName(breakdown.modelName)}`];
+
+		if (firstColumnEmpty) {
+			row.push(`  └─ ${formatModelName(breakdown.modelName)}`);
+		}
 
 		// Add extra empty columns before data
 		for (let i = 0; i < extraColumns; i++) {
