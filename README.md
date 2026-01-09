@@ -32,144 +32,144 @@ npm install opencode-usage-cli
 
 ## Usage
 
-After global installation, the `opencode-usage` command will be available.
+Using `npx opencode-usage-cli` (no installation required) or globally installed `opencode-usage` command.
 
 ### Analyze Usage (Last 7 days)
 
 ```bash
-opencode-usage analyze
+npx opencode-usage-cli analyze
 ```
 
 ### Filter by Time Range
 
 ```bash
 # Last 30 days
-opencode-usage analyze -d 30
+npx opencode-usage-cli analyze -d 30
 
 # Last 90 days
-opencode-usage analyze --days 90
+npx opencode-usage-cli analyze --days 90
 ```
 
 ### Filter by Model
 
 ```bash
 # Only Claude Sonnet
-opencode-usage analyze -m sonnet
+npx opencode-usage-cli analyze -m sonnet
 
 # Only Haiku
-opencode-usage analyze --model haiku
+npx opencode-usage-cli analyze --model haiku
 ```
 
 ### Filter by Project Path
 
 ```bash
 # Pattern match (default) - matches any path containing the pattern
-opencode-usage analyze -p github
-opencode-usage analyze --project my-app
+npx opencode-usage-cli analyze -p github
+npx opencode-usage-cli analyze --project my-app
 
 # Exact path match - matches the specific directory path
-opencode-usage analyze -p /Users/yourname/projects/my-app --exact-path
-opencode-usage analyze -p ~/projects/my-app --exact-path
+npx opencode-usage-cli analyze -p /Users/yourname/projects/my-app --exact-path
+npx opencode-usage-cli analyze -p ~/projects/my-app --exact-path
 
 # Use with instances to see breakdown
-opencode-usage analyze -p ~/projects/my-app --exact-path --instances
+npx opencode-usage-cli analyze -p ~/projects/my-app --exact-path --instances
 ```
 
 ### Filter by Current Working Directory
 
 ```bash
 # Only show sessions from current working directory
-opencode-usage analyze --current-only
-opencode-usage daily --current-only
-opencode-usage monthly --current-only
+npx opencode-usage-cli analyze --current-only
+npx opencode-usage-cli daily --current-only
+npx opencode-usage-cli monthly --current-only
 
 # Combine with time range
-opencode-usage analyze -d 30 --current-only
+npx opencode-usage-cli analyze -d 30 --current-only
 ```
 
 ### Show Session Breakdown
 
 ```bash
-opencode-usage analyze --sessions
+npx opencode-usage-cli analyze --sessions
 ```
 
 ### Group by Path/Instance
 
 ```bash
 # Analyze command - show usage breakdown by project path
-opencode-usage analyze --instances
+npx opencode-usage-cli analyze --instances
 
 # Daily report - show usage breakdown by project path
-opencode-usage daily --instances
+npx opencode-usage-cli daily --instances
 
 # Monthly report - show usage breakdown by project path
-opencode-usage monthly --instances
+npx opencode-usage-cli monthly --instances
 
 # Combine with other filters
-opencode-usage analyze -d 30 -m sonnet --instances
+npx opencode-usage-cli analyze -d 30 -m sonnet --instances
 
 # Combine with exact path matching
-opencode-usage analyze -p /Users/yourname/projects/my-app --exact-path --instances
+npx opencode-usage-cli analyze -p /Users/yourname/projects/my-app --exact-path --instances
 ```
 
 ### Export Formats
 
 ```bash
 # JSON output
-opencode-usage analyze --json > usage.json
+npx opencode-usage-cli analyze --json > usage.json
 
 # CSV output
-opencode-usage analyze --csv > usage.csv
+npx opencode-usage-cli analyze --csv > usage.csv
 ```
 
 ### Daily Report
 
 ```bash
 # Last 7 days (default)
-opencode-usage daily
+npx opencode-usage-cli daily
 
 # Last 30 days
-opencode-usage daily -d 30
+npx opencode-usage-cli daily -d 30
 
 # With model breakdown
-opencode-usage daily --breakdown
+npx opencode-usage-cli daily --breakdown
 
 # Group by project/instance
-opencode-usage daily --instances
+npx opencode-usage-cli daily --instances
 ```
 
 ### Monthly Report
 
 ```bash
 # Last 30 days (default)
-opencode-usage monthly
+npx opencode-usage-cli monthly
 
 # Last 90 days
-opencode-usage monthly -d 90
+npx opencode-usage-cli monthly -d 90
 
 # With model breakdown
-opencode-usage monthly --breakdown
+npx opencode-usage-cli monthly --breakdown
 
 # Group by project/instance
-opencode-usage monthly --instances
+npx opencode-usage-cli monthly --instances
 ```
 
 ### Overall Summary
 
 ```bash
-opencode-usage summary -d 30
+npx opencode-usage-cli summary -d 30
 ```
 
 ### Reverse Sort (Oldest First)
 
 ```bash
-opencode-usage analyze --reverse
+npx opencode-usage-cli analyze --reverse
 ```
 
 ### Help
 
 ```bash
-opencode-usage --help
+npx opencode-usage-cli --help
 ```
 
 ## Example Output
@@ -283,21 +283,31 @@ mkdir -p ~/.config/opencode/command
 cat > ~/.config/opencode/command/opencode-usage.md << 'EOF'
 ---
 description: Show OpenCode usage statistics
-arguments: $1 (days, optional) $2 (current-only, optional)
+arguments: $1 (command, optional) $2 (options, optional)
 ---
 
-!\`opencode-usage-cli analyze -d $1 --current-only=$2\`
+Usage examples:
+  - analyze: Overall summary
+  - daily: Daily breakdown
+  - monthly: Monthly breakdown
+
+!\`npx opencode-usage-cli $1 $2\`
 EOF
 ```
 
 3. Now you can use the `/opencode-usage` command directly in OpenCode TUI!
 
 ```bash
-/opencode-usage              # Show last 7 days (default)
-/opencode-usage 30           # Show last 30 days
-/opencode-usage 90           # Show last 90 days
-/opencode-usage 30 true      # Show last 30 days, current directory only
+/opencode-usage                          # Overall summary (last 7 days)
+/opencode-usage daily                     # Daily breakdown (last 7 days)
+/opencode-usage daily --breakdown         # Daily with model breakdown
+/opencode-usage daily -m claude --breakdown --instances  # Daily by model and project
+/opencode-usage monthly                   # Monthly breakdown
+/opencode-usage monthly --instances       # Monthly by project
+/opencode-usage analyze -d 30             # Overall summary (last 30 days)
 ```
+
+**Note:** The `/opencode-usage` slash command uses `npx opencode-usage-cli` internally, so it works without global installation.
 
 ## License
 

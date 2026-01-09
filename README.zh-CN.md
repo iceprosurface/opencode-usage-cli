@@ -32,144 +32,144 @@ npm install opencode-usage-cli
 
 ## 使用方法
 
-全局安装后，`opencode-usage` 命令将可用。
+使用 `npx opencode-usage-cli`（无需安装）或全局安装后的 `opencode-usage` 命令。
 
 ### 分析使用情况（最近 7 天）
 
 ```bash
-opencode-usage analyze
+npx opencode-usage-cli analyze
 ```
 
 ### 按时间范围过滤
 
 ```bash
 # 最近 30 天
-opencode-usage analyze -d 30
+npx opencode-usage-cli analyze -d 30
 
 # 最近 90 天
-opencode-usage analyze --days 90
+npx opencode-usage-cli analyze --days 90
 ```
 
 ### 按模型过滤
 
 ```bash
 # 仅 Claude Sonnet
-opencode-usage analyze -m sonnet
+npx opencode-usage-cli analyze -m sonnet
 
 # 仅 Haiku
-opencode-usage analyze --model haiku
+npx opencode-usage-cli analyze --model haiku
 ```
 
 ### 按项目路径过滤
 
 ```bash
 # 模式匹配（默认）- 匹配包含该模式的任何路径
-opencode-usage analyze -p github
-opencode-usage analyze --project my-app
+npx opencode-usage-cli analyze -p github
+npx opencode-usage-cli analyze --project my-app
 
 # 精确路径匹配 - 匹配特定的目录路径
-opencode-usage analyze -p /Users/yourname/projects/my-app --exact-path
-opencode-usage analyze -p ~/projects/my-app --exact-path
+npx opencode-usage-cli analyze -p /Users/yourname/projects/my-app --exact-path
+npx opencode-usage-cli analyze -p ~/projects/my-app --exact-path
 
 # 与实例结合使用查看明细
-opencode-usage analyze -p ~/projects/my-app --exact-path --instances
+npx opencode-usage-cli analyze -p ~/projects/my-app --exact-path --instances
 ```
 
 ### 按当前工作目录过滤
 
 ```bash
 # 仅显示当前工作目录的会话
-opencode-usage analyze --current-only
-opencode-usage daily --current-only
-opencode-usage monthly --current-only
+npx opencode-usage-cli analyze --current-only
+npx opencode-usage-cli daily --current-only
+npx opencode-usage-cli monthly --current-only
 
 # 与时间范围结合使用
-opencode-usage analyze -d 30 --current-only
+npx opencode-usage-cli analyze -d 30 --current-only
 ```
 
 ### 显示会话明细
 
 ```bash
-opencode-usage analyze --sessions
+npx opencode-usage-cli analyze --sessions
 ```
 
 ### 按路径/实例分组
 
 ```bash
 # 分析命令 - 按项目路径显示使用情况明细
-opencode-usage analyze --instances
+npx opencode-usage-cli analyze --instances
 
 # 每日报告 - 按项目路径显示使用情况明细
-opencode-usage daily --instances
+npx opencode-usage-cli daily --instances
 
 # 每月报告 - 按项目路径显示使用情况明细
-opencode-usage monthly --instances
+npx opencode-usage-cli monthly --instances
 
 # 与其他过滤器结合使用
-opencode-usage analyze -d 30 -m sonnet --instances
+npx opencode-usage-cli analyze -d 30 -m sonnet --instances
 
 # 与精确路径匹配结合使用
-opencode-usage analyze -p /Users/yourname/projects/my-app --exact-path --instances
+npx opencode-usage-cli analyze -p /Users/yourname/projects/my-app --exact-path --instances
 ```
 
 ### 导出格式
 
 ```bash
 # JSON 输出
-opencode-usage analyze --json > usage.json
+npx opencode-usage-cli analyze --json > usage.json
 
 # CSV 输出
-opencode-usage analyze --csv > usage.csv
+npx opencode-usage-cli analyze --csv > usage.csv
 ```
 
 ### 每日报告
 
 ```bash
 # 最近 7 天（默认）
-opencode-usage daily
+npx opencode-usage-cli daily
 
 # 最近 30 天
-opencode-usage daily -d 30
+npx opencode-usage-cli daily -d 30
 
 # 按模型分组
-opencode-usage daily --breakdown
+npx opencode-usage-cli daily --breakdown
 
 # 按项目/实例分组
-opencode-usage daily --instances
+npx opencode-usage-cli daily --instances
 ```
 
 ### 每月报告
 
 ```bash
 # 最近 30 天（默认）
-opencode-usage monthly
+npx opencode-usage-cli monthly
 
 # 最近 90 天
-opencode-usage monthly -d 90
+npx opencode-usage-cli monthly -d 90
 
 # 按模型分组
-opencode-usage monthly --breakdown
+npx opencode-usage-cli monthly --breakdown
 
 # 按项目/实例分组
-opencode-usage monthly --instances
+npx opencode-usage-cli monthly --instances
 ```
 
 ### 总体摘要
 
 ```bash
-opencode-usage summary -d 30
+npx opencode-usage-cli summary -d 30
 ```
 
 ### 反向排序（从最旧到最新）
 
 ```bash
-opencode-usage analyze --reverse
+npx opencode-usage-cli analyze --reverse
 ```
 
 ### 帮助
 
 ```bash
-opencode-usage --help
+npx opencode-usage-cli --help
 ```
 
 ## 示例输出
@@ -283,21 +283,31 @@ mkdir -p ~/.config/opencode/command
 cat > ~/.config/opencode/command/opencode-usage.md << 'EOF'
 ---
 description: 显示 OpenCode 使用统计
-arguments: $1 (天数, 可选) $2 (仅当前目录, 可选)
+arguments: $1 (命令, 可选) $2 (选项, 可选)
 ---
 
-!\`opencode-usage-cli analyze -d $1 --current-only=$2\`
+使用示例：
+  - analyze: 总体摘要
+  - daily: 每日明细
+  - monthly: 每月明细
+
+!\`npx opencode-usage-cli $1 $2\`
 EOF
 ```
 
 3. 现在你可以直接在 OpenCode TUI 中使用 `/opencode-usage` 命令了！
 
+```bash
+/opencode-usage                          # 总体摘要（最近 7 天）
+/opencode-usage daily                     # 每日明细（最近 7 天）
+/opencode-usage daily --breakdown         # 每日明细 + 模型分组
+/opencode-usage daily -m claude --breakdown --instances  # 每日明细（按模型和项目）
+/opencode-usage monthly                   # 每月明细
+/opencode-usage monthly --instances       # 每月明细（按项目）
+/opencode-usage analyze -d 30             # 总体摘要（最近 30 天）
 ```
-/opencode-usage              # 显示最近 7 天（默认）
-/opencode-usage 30           # 显示最近 30 天
-/opencode-usage 90           # 显示最近 90 天
-/opencode-usage 30 true      # 显示最近 30 天，仅当前目录
-```
+
+**注意：** `/opencode-usage` slash 命令内部使用 `npx opencode-usage-cli`，因此无需全局安装即可使用。
 
 ## 许可证
 
