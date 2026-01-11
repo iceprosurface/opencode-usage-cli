@@ -183,21 +183,31 @@ export class ResponsiveTable {
 		const totalRequiredWidth = columnWidths.reduce((sum, width) => sum + width, 0) + tableOverhead;
 
 		if (totalRequiredWidth > terminalWidth) {
-			// Apply responsive resizing and use compact date format if available
-			const scaleFactor = availableWidth / columnWidths.reduce((sum, width) => sum + width, 0);
+			const columnWeights = colAligns.map((align, index) => {
+				if (index === 1) {
+					return 0.5;
+				}
+				if (align === 'right') {
+					return 1.0;
+				}
+				return 0.8;
+			});
+
+			const weightedIdealWidths = columnWidths.map((width, index) => width * columnWeights[index]);
+			const totalWeightedIdealWidth = weightedIdealWidths.reduce((sum, width) => sum + width, 0);
+
 			const adjustedWidths = columnWidths.map((width, index) => {
 				const align = colAligns[index];
-				let adjustedWidth = Math.floor(width * scaleFactor);
+				let adjustedWidth = Math.floor((weightedIdealWidths[index] / totalWeightedIdealWidth) * availableWidth);
 
-				// Apply minimum widths based on column type
 				if (align === 'right') {
-					adjustedWidth = Math.max(adjustedWidth, 10);
+					adjustedWidth = Math.max(adjustedWidth, 9);
 				}
 				else if (index === 0) {
 					adjustedWidth = Math.max(adjustedWidth, 10);
 				}
 				else if (index === 1) {
-					adjustedWidth = Math.max(adjustedWidth, 12);
+					adjustedWidth = Math.max(adjustedWidth, 10);
 				}
 				else {
 					adjustedWidth = Math.max(adjustedWidth, 8);
@@ -307,6 +317,24 @@ export function formatNumber(num: number): string {
 }
 
 /**
+ * Formats a number with unit suffixes (K, M, B)
+ * @param num - The number to format
+ * @returns Formatted number string with unit suffix
+ */
+export function formatNumberWithUnit(num: number): string {
+	if (num >= 1000000000) {
+		return (num / 1000000000).toFixed(1) + 'B';
+	}
+	if (num >= 1000000) {
+		return (num / 1000000).toFixed(1) + 'M';
+	}
+	if (num >= 1000) {
+		return (num / 1000).toFixed(1) + 'K';
+	}
+	return num.toString();
+}
+
+/**
  * Formats a number as USD currency with dollar sign and 2 decimal places
  * @param amount - The amount to format
  * @returns Formatted currency string (e.g., "$12.34")
@@ -399,11 +427,11 @@ export function pushBreakdownRows(
 			+ breakdown.cacheCreationTokens + breakdown.cacheReadTokens;
 
 		row.push(
-			pc.gray(formatNumber(breakdown.inputTokens)),
-			pc.gray(formatNumber(breakdown.outputTokens)),
-			pc.gray(formatNumber(breakdown.cacheCreationTokens)),
-			pc.gray(formatNumber(breakdown.cacheReadTokens)),
-			pc.gray(formatNumber(totalTokens)),
+			pc.gray(formatNumberWithUnit(breakdown.inputTokens)),
+			pc.gray(formatNumberWithUnit(breakdown.outputTokens)),
+			pc.gray(formatNumberWithUnit(breakdown.cacheCreationTokens)),
+			pc.gray(formatNumberWithUnit(breakdown.cacheReadTokens)),
+			pc.gray(formatNumberWithUnit(totalTokens)),
 			pc.gray(formatCurrency(breakdown.cost)),
 		);
 
@@ -523,11 +551,11 @@ export function formatUsageDataRow(
 	const row: (string | number)[] = [
 		firstColumnValue,
 		data.modelsUsed != null ? formatModelsDisplayMultiline(data.modelsUsed) : '',
-		formatNumber(data.inputTokens),
-		formatNumber(data.outputTokens),
-		formatNumber(data.cacheCreationTokens),
-		formatNumber(data.cacheReadTokens),
-		formatNumber(totalTokens),
+		formatNumberWithUnit(data.inputTokens),
+		formatNumberWithUnit(data.outputTokens),
+		formatNumberWithUnit(data.cacheCreationTokens),
+		formatNumberWithUnit(data.cacheReadTokens),
+		formatNumberWithUnit(totalTokens),
 		formatCurrency(data.totalCost),
 	];
 
@@ -550,11 +578,11 @@ export function formatTotalsRow(totals: UsageData, includeLastActivity = false):
 	const row: (string | number)[] = [
 		pc.yellow('Total'),
 		'', // Empty for Models column in totals
-		pc.yellow(formatNumber(totals.inputTokens)),
-		pc.yellow(formatNumber(totals.outputTokens)),
-		pc.yellow(formatNumber(totals.cacheCreationTokens)),
-		pc.yellow(formatNumber(totals.cacheReadTokens)),
-		pc.yellow(formatNumber(totalTokens)),
+		pc.yellow(formatNumberWithUnit(totals.inputTokens)),
+		pc.yellow(formatNumberWithUnit(totals.outputTokens)),
+		pc.yellow(formatNumberWithUnit(totals.cacheCreationTokens)),
+		pc.yellow(formatNumberWithUnit(totals.cacheReadTokens)),
+		pc.yellow(formatNumberWithUnit(totalTokens)),
 		pc.yellow(formatCurrency(totals.totalCost)),
 	];
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { formatNumber, formatCurrency, formatModelsDisplay, formatModelsDisplayMultiline, pushBreakdownRows, formatUsageDataRow, formatTotalsRow, createUsageReportTable, addEmptySeparatorRow } from '../table.js';
+import { formatNumber, formatNumberWithUnit, formatCurrency, formatModelsDisplay, formatModelsDisplayMultiline, pushBreakdownRows, formatUsageDataRow, formatTotalsRow, createUsageReportTable, addEmptySeparatorRow } from '../table.js';
 
 describe('table.ts - formatNumber', () => {
   it('should format numbers with commas', () => {
@@ -10,6 +10,23 @@ describe('table.ts - formatNumber', () => {
 
   it('should format 0 correctly', () => {
     expect(formatNumber(0)).toBe('0');
+  });
+});
+
+describe('table.ts - formatNumberWithUnit', () => {
+  it('should format numbers with K, M, B suffixes', () => {
+    expect(formatNumberWithUnit(500)).toBe('500');
+    expect(formatNumberWithUnit(1000)).toBe('1.0K');
+    expect(formatNumberWithUnit(1500)).toBe('1.5K');
+    expect(formatNumberWithUnit(10000)).toBe('10.0K');
+    expect(formatNumberWithUnit(1000000)).toBe('1.0M');
+    expect(formatNumberWithUnit(1500000)).toBe('1.5M');
+    expect(formatNumberWithUnit(1000000000)).toBe('1.0B');
+    expect(formatNumberWithUnit(1500000000)).toBe('1.5B');
+  });
+
+  it('should format 0 correctly', () => {
+    expect(formatNumberWithUnit(0)).toBe('0');
   });
 });
 
@@ -78,11 +95,11 @@ describe('table.ts - formatUsageDataRow', () => {
 
     expect(result[0]).toBe('2026-01-07');
     expect(result[1]).toContain('sonnet-4');
-    expect(result[2]).toBe('1,000');
-    expect(result[3]).toBe('2,000');
+    expect(result[2]).toBe('1.0K');
+    expect(result[3]).toBe('2.0K');
     expect(result[4]).toBe('500');
-    expect(result[5]).toBe('1,500');
-    expect(result[6]).toBe('5,000');
+    expect(result[5]).toBe('1.5K');
+    expect(result[6]).toBe('5.0K');
     expect(result[7]).toBe('$1.23');
   });
 
@@ -128,7 +145,7 @@ describe('table.ts - formatTotalsRow', () => {
 
     expect(result[0]).toContain('Total'); // yellow text
     expect(result[1]).toBe(''); // empty models column
-    expect(result[2]).toContain('10,000');
+    expect(result[2]).toContain('10.0K');
     expect(result[7]).toContain('$12.34');
     expect(result.length).toBe(8);
   });
@@ -215,7 +232,7 @@ describe('table.ts - pushBreakdownRows', () => {
 
     const row = mockTable.push.mock.calls[0][0];
     // Total tokens should be: 1000 + 2000 + 500 + 1500 = 5000
-    expect(row[6]).toBe('5,000');
+    expect(row[6]).toBe('5.0K');
   });
 });
 

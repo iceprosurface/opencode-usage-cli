@@ -278,7 +278,7 @@ function printDailyReport(dailyData: DailyData[], options: any) {
       table.push(row);
 
       if (options.breakdown) {
-        pushBreakdownRows(table, data.modelBreakdowns, 1, 0, false);
+        pushBreakdownRows(table, data.modelBreakdowns, 0, 0, true);
       }
     }
   }
@@ -362,7 +362,7 @@ function printMonthlyReport(monthlyData: MonthlyData[], options: any) {
       table.push(row);
 
       if (options.breakdown) {
-        pushBreakdownRows(table, data.modelBreakdowns, 1, 0, false);
+        pushBreakdownRows(table, data.modelBreakdowns, 0, 0, true);
       }
     }
   }
@@ -449,6 +449,9 @@ function printCSV(result: AnalysisResult) {
 }
 
 function formatNumber(num: number): string {
+  if (num >= 1000000000) {
+    return (num / 1000000000).toFixed(1) + 'B';
+  }
   if (num >= 1000000) {
     return (num / 1000000).toFixed(1) + 'M';
   }
