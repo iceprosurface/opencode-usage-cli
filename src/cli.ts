@@ -11,6 +11,13 @@ import {
   pushBreakdownRows,
   type UsageData
 } from './table.js';
+import {
+  analyzeHeatmapData,
+  renderHeatmapTerminal,
+  saveHeatmapSvg,
+  generateHeatmapPng,
+  type HeatmapData
+} from './heatmap.js';
 
 const program = new Command();
 
@@ -145,6 +152,47 @@ program
         console.log(JSON.stringify(result, null, 2));
       } else {
         printSummary(result, options);
+      }
+    } catch (error) {
+      console.error(pc.red(`Error: ${(error as Error).message}`));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('heatmap')
+  .description('Show usage heatmap (GitHub-style contribution graph)')
+  .option('-d, --days <n>', 'Time range in days', '365')
+  .option('-m, --model <pattern>', 'Filter by model pattern')
+  .option('-p, --project <pattern>', 'Filter by project path pattern')
+  .option('--exact-path', 'Use exact path matching instead of pattern matching')
+  .option('--metric <type>', 'Metric to display: tokens, cost, messages', 'tokens')
+  .option('--svg <file>', 'Export heatmap as SVG file')
+  .option('--png <file>', 'Export heatmap as PNG file (requires sharp)')
+  .option('--json', 'Output raw data in JSON format')
+  .option('-c, --current-only [value]', 'Filter sessions from current working directory only')
+  .action(async (options) => {
+    try {
+      const currentOnlyValue = options.currentOnly === true || options.currentOnly === 'true';
+      const heatmapData = await analyzeHeatmapData({
+        days: parseInt(options.days),
+        model: options.model,
+        project: options.project,
+        projectExact: options.exactPath,
+        currentOnly: currentOnlyValue,
+        metric: options.metric
+      });
+
+      if (options.json) {
+        console.log(JSON.stringify(heatmapData, null, 2));
+      } else if (options.svg) {
+        saveHeatmapSvg(heatmapData, options.svg);
+        console.log(pc.green(`SVG heatmap saved to: ${options.svg}`));
+      } else if (options.png) {
+        await generateHeatmapPng(heatmapData, options.png);
+        console.log(pc.green(`PNG heatmap saved to: ${options.png}`));
+      } else {
+        console.log(renderHeatmapTerminal(heatmapData));
       }
     } catch (error) {
       console.error(pc.red(`Error: ${(error as Error).message}`));

@@ -160,6 +160,28 @@ npx opencode-usage-cli monthly --instances
 npx opencode-usage-cli summary -d 30
 ```
 
+### 使用热力图（GitHub 风格）
+
+```bash
+# 终端热力图（默认一年）
+npx opencode-usage-cli heatmap
+
+# 最近 30 天
+npx opencode-usage-cli heatmap -d 30
+
+# 导出为 SVG
+npx opencode-usage-cli heatmap --svg heatmap.svg
+
+# 导出为 PNG（需要：npm install sharp）
+npx opencode-usage-cli heatmap --png heatmap.png
+
+# 按指标过滤（tokens, cost, messages）
+npx opencode-usage-cli heatmap --metric cost
+
+# JSON 输出
+npx opencode-usage-cli heatmap --json
+```
+
 ### 反向排序（从最旧到最新）
 
 ```bash
@@ -258,6 +280,32 @@ By Path (when using --instances):
 │ Total                   │                                       │  27,801  │  43,690  │   3,357  │  90,357  │ 165,205  │   $2.12  │
 └─────────────────────────┴───────────────────────────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴──────────┘
 ```
+
+### 使用热力图（GitHub 风格）
+
+终端输出显示彩色方块：
+
+```
+📊 OpenCode Usage Heatmap
+
+    Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   Jan   Feb
+Sun                                                                                    
+Mon                                                                                    
+Tue                                                                                    
+Wed                                                                                    
+Thu                                                                                    
+Fri                                                                                    
+Sat                                                                                    
+
+Less       More
+
+Summary:
+  Total Tokens: 1.9B
+  Date Range: 2025-02-14 to 2026-02-14
+  Active Days: 39
+```
+
+SVG 导出（`--svg heatmap.svg`）生成 GitHub 风格的贡献图，可嵌入文档或分享。
 
 ## 数据来源
 

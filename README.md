@@ -160,6 +160,28 @@ npx opencode-usage-cli monthly --instances
 npx opencode-usage-cli summary -d 30
 ```
 
+### Usage Heatmap (GitHub-style)
+
+```bash
+# Terminal heatmap (last year)
+npx opencode-usage-cli heatmap
+
+# Last 30 days
+npx opencode-usage-cli heatmap -d 30
+
+# Export as SVG
+npx opencode-usage-cli heatmap --svg heatmap.svg
+
+# Export as PNG (requires: npm install sharp)
+npx opencode-usage-cli heatmap --png heatmap.png
+
+# Filter by metric (tokens, cost, messages)
+npx opencode-usage-cli heatmap --metric cost
+
+# JSON output
+npx opencode-usage-cli heatmap --json
+```
+
 ### Reverse Sort (Oldest First)
 
 ```bash
@@ -258,6 +280,32 @@ By Path (when using --instances):
 │ Total                   │                                       │  27,801  │  43,690  │   3,357  │  90,357  │ 165,205  │   $2.12  │
 └─────────────────────────┴───────────────────────────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴──────────┘
 ```
+
+### Usage Heatmap (GitHub-style)
+
+Terminal output with colored blocks:
+
+```
+📊 OpenCode Usage Heatmap
+
+    Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   Jan   Feb
+Sun                                                                                    
+Mon                                                                                    
+Tue                                                                                    
+Wed                                                                                    
+Thu                                                                                    
+Fri                                                                                    
+Sat                                                                                    
+
+Less       More
+
+Summary:
+  Total Tokens: 1.9B
+  Date Range: 2025-02-14 to 2026-02-14
+  Active Days: 39
+```
+
+SVG export (`--svg heatmap.svg`) generates a GitHub-style contribution graph that can be embedded in documentation or shared.
 
 ## Data Source
 
