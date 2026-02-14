@@ -316,17 +316,20 @@ Use this skill when the user asks about:
 ## Commands
 
 ```bash
-npx opencode-usage-cli <command> [options]
+npx opencode-usage-cli <command> --json [options]
 ```
+
+> **Important**: Always use `--json` flag when calling as AI, to get structured data for easy parsing.
 
 | Command | Description |
 |---------|-------------|
-| analyze | Overall summary (default 7 days) |
-| daily | Daily report |
-| monthly | Monthly report |
+| analyze --json | Overall summary (default 7 days) |
+| daily --json | Daily report |
+| monthly --json | Monthly report |
 
 | Option | Description |
 |--------|-------------|
+| --json | **Required for AI** - JSON output for easy parsing |
 | -d, --days <n> | Time range in days |
 | -m, --model <pattern> | Filter by model |
 | --breakdown | Show model breakdown |
@@ -336,17 +339,17 @@ npx opencode-usage-cli <command> [options]
 ## Examples
 
 ```bash
-# 7-day summary
-npx opencode-usage-cli analyze
+# 7-day summary (AI call)
+npx opencode-usage-cli analyze --json
 
 # 30-day summary
-npx opencode-usage-cli analyze -d 30
+npx opencode-usage-cli analyze --json -d 30
 
 # Daily with model breakdown
-npx opencode-usage-cli daily --breakdown
+npx opencode-usage-cli daily --json --breakdown
 
 # By project
-npx opencode-usage-cli daily --instances
+npx opencode-usage-cli daily --json --instances
 ```
 EOF
 ```

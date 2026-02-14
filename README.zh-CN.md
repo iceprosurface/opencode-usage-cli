@@ -316,17 +316,20 @@ license: MIT
 ## 命令
 
 ```bash
-npx opencode-usage-cli <command> [options]
+npx opencode-usage-cli <command> --json [options]
 ```
+
+> **重要**：作为 AI 调用时，**必须始终使用 `--json` 参数**，以便获得结构化数据，便于解析和展示。
 
 | 命令 | 说明 |
 |------|------|
-| analyze | 总体摘要（默认 7 天） |
-| daily | 每日报告 |
-| monthly | 每月报告 |
+| analyze --json | 总体摘要（默认 7 天） |
+| daily --json | 每日报告 |
+| monthly --json | 每月报告 |
 
 | 选项 | 说明 |
 |------|------|
+| --json | **AI 调用时必须** - JSON 格式输出，便于解析 |
 | -d, --days <n> | 时间范围（天） |
 | -m, --model <pattern> | 按模型过滤 |
 | --breakdown | 显示模型明细 |
@@ -336,17 +339,17 @@ npx opencode-usage-cli <command> [options]
 ## 示例
 
 ```bash
-# 7 天摘要
-npx opencode-usage-cli analyze
+# 7 天摘要（AI 调用）
+npx opencode-usage-cli analyze --json
 
 # 30 天摘要
-npx opencode-usage-cli analyze -d 30
+npx opencode-usage-cli analyze --json -d 30
 
 # 每日报告 + 模型明细
-npx opencode-usage-cli daily --breakdown
+npx opencode-usage-cli daily --json --breakdown
 
 # 按项目分组
-npx opencode-usage-cli daily --instances
+npx opencode-usage-cli daily --json --instances
 ```
 EOF
 ```
