@@ -1,12 +1,21 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import {
+  hasNewDbFormat,
+  hasOldJsonFormat,
+  getDb,
+  getSessionMap,
+  getMessagesByTimeRange,
+  parseMessageData,
+  OPENCODE_STORAGE_PATH,
+  type SessionRow,
+  type MessageData
+} from './db.js';
 export { formatNumberWithUnit } from './table.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-const OPENCODE_STORAGE_PATH = path.join(process.env.HOME || '', '.local', 'share', 'opencode', 'storage');
 
 export interface AnalysisResult {
   totalSessions: number;
@@ -134,11 +143,217 @@ export interface AnalyzeOptions {
 }
 
 export async function analyzeUsage(options: AnalyzeOptions = {}): Promise<AnalysisResult> {
+  if (hasNewDbFormat()) {
+    return analyzeUsageFromSqlite(options);
+  }
+  if (hasOldJsonFormat()) {
+    return analyzeUsageFromJson(options);
+  }
+  throw new Error('No OpenCode data found. Please run OpenCode first to create session data.');
+}
+
+async function analyzeUsageFromSqlite(options: AnalyzeOptions): Promise<AnalysisResult> {
+  const { days = 7, model, project, projectExact = false, summary = false, reverse = false, currentOnly = false, currentPath } = options;
+
+  const cutoffTime = Date.now() - (days * 24 * 60 * 60 * 1000);
+  const sessionMap = getSessionMap();
+  const messages = getMessagesByTimeRange(cutoffTime, Date.now());
+
+  const sessions = new Map<string, InternalSessionData>();
+
+  for (const msgRow of messages) {
+    const msgData = parseMessageData(msgRow);
+    const sessionId = msgRow.session_id;
+    const sessionInfo = sessionMap.get(sessionId);
+
+    if (!sessionInfo) continue;
+
+    const createdTime = msgData.time?.created || msgRow.time_created;
+    const completedTime = msgData.time?.completed || msgRow.time_updated;
+
+    if (createdTime < cutoffTime) continue;
+
+    if (model && msgData.modelID && !msgData.modelID.toLowerCase().includes(model.toLowerCase())) {
+      continue;
+    }
+
+    if (project && msgData.path?.root) {
+      const projectPattern = project.toLowerCase();
+      const projectPath = msgData.path.root.toLowerCase();
+      if (projectExact) {
+        if (projectPath !== projectPattern && !projectPath.endsWith(projectPattern + '/') && !projectPattern.startsWith(projectPath + '/')) {
+          continue;
+        }
+      } else {
+        if (!projectPath.includes(projectPattern)) {
+          continue;
+        }
+      }
+    }
+
+    if (currentOnly && msgData.path?.root) {
+      const workingDir = (currentPath || process.cwd()).toLowerCase();
+      const msgPath = msgData.path.root.toLowerCase();
+      const workingDirWithSlash = workingDir.endsWith('/') ? workingDir : workingDir + '/';
+      const msgPathWithSlash = msgPath.endsWith('/') ? msgPath : msgPath + '/';
+
+      if (!msgPathWithSlash.startsWith(workingDirWithSlash) &&
+          !workingDirWithSlash.startsWith(msgPathWithSlash)) {
+        continue;
+      }
+    }
+
+    if (msgData.role === 'assistant') {
+      if (!sessions.has(sessionId)) {
+        sessions.set(sessionId, {
+          id: sessionId,
+          messages: [],
+          tokens: 0,
+          cost: 0,
+          models: {},
+          startTime: Infinity,
+          endTime: 0,
+          title: sessionInfo.title || 'Untitled',
+          directory: sessionInfo.directory,
+          rawMessageData: {}
+        });
+      }
+
+      const sessionData = sessions.get(sessionId)!;
+      sessionData.rawMessageData[msgData.id] = { tokens: msgData.tokens };
+      sessionData.startTime = Math.min(sessionData.startTime, createdTime);
+      sessionData.endTime = Math.max(sessionData.endTime, completedTime || createdTime);
+
+      const msgTokens = (msgData.tokens?.input || 0) +
+                       (msgData.tokens?.output || 0) +
+                       (msgData.tokens?.reasoning || 0) +
+                       (msgData.tokens?.cache?.read || 0) +
+                       (msgData.tokens?.cache?.write || 0);
+
+      const msgCost = msgData.cost || 0;
+
+      sessionData.messages.push({
+        id: msgData.id,
+        model: msgData.modelID,
+        provider: msgData.providerID,
+        agent: msgData.agent,
+        tokens: msgTokens,
+        cost: msgCost,
+        created: createdTime
+      });
+
+      sessionData.tokens += msgTokens;
+      sessionData.cost += msgCost;
+
+      if (msgData.modelID) {
+        if (!sessionData.models[msgData.modelID]) {
+          sessionData.models[msgData.modelID] = { tokens: 0, cost: 0, messages: 0 };
+        }
+        sessionData.models[msgData.modelID].tokens += msgTokens;
+        sessionData.models[msgData.modelID].cost += msgCost;
+        sessionData.models[msgData.modelID].messages++;
+      }
+    }
+  }
+
+  const sessionsArray = Array.from(sessions.values());
+
+  sessionsArray.sort((a, b) => {
+    return reverse ? a.startTime - b.startTime : b.startTime - a.startTime;
+  });
+
+  const totalSessions = sessionsArray.length;
+  const totalMessages = sessionsArray.reduce((sum, s) => sum + s.messages.length, 0);
+  const totalTokens = sessionsArray.reduce((sum, s) => sum + s.tokens, 0);
+  const totalCost = sessionsArray.reduce((sum, s) => sum + s.cost, 0);
+
+  const modelAggregates: Record<string, { tokens: number; cost: number; sessions: number }> = {};
+  sessionsArray.forEach(session => {
+    Object.entries(session.models).forEach(([modelName, data]) => {
+      if (!modelAggregates[modelName]) {
+        modelAggregates[modelName] = { tokens: 0, cost: 0, sessions: 0 };
+      }
+      modelAggregates[modelName].tokens += data.tokens;
+      modelAggregates[modelName].cost += data.cost;
+      modelAggregates[modelName].sessions++;
+    });
+  });
+
+  const models = Object.entries(modelAggregates)
+    .map(([name, data]) => ({
+      name,
+      tokens: data.tokens,
+      cost: data.cost,
+      sessions: data.sessions
+    }))
+    .sort((a, b) => b.cost - a.cost);
+
+  const allTimes = sessionsArray.flatMap(s => [s.startTime, s.endTime]);
+  const minTime = allTimes.length > 0 ? Math.min(...allTimes) : 0;
+  const maxTime = allTimes.length > 0 ? Math.max(...allTimes) : 0;
+
+  return {
+    totalSessions,
+    totalMessages,
+    dateRange: {
+      start: formatTimestamp(minTime),
+      end: formatTimestamp(maxTime)
+    },
+    tokens: {
+      input: sessionsArray.reduce((sum, s) =>
+        sum + s.messages.reduce((mSum, m) =>
+          mSum + (findMessageTokenData(s, m.id)?.input || 0), 0), 0),
+      output: sessionsArray.reduce((sum, s) =>
+        sum + s.messages.reduce((mSum, m) =>
+          mSum + (findMessageTokenData(s, m.id)?.output || 0), 0), 0),
+      reasoning: sessionsArray.reduce((sum, s) =>
+        sum + s.messages.reduce((mSum, m) =>
+          mSum + (findMessageTokenData(s, m.id)?.reasoning || 0), 0), 0),
+      cacheRead: sessionsArray.reduce((sum, s) =>
+        sum + s.messages.reduce((mSum, m) =>
+          mSum + (findMessageTokenData(s, m.id)?.cache?.read || 0), 0), 0),
+      cacheWrite: sessionsArray.reduce((sum, s) =>
+        sum + s.messages.reduce((mSum, m) =>
+          mSum + (findMessageTokenData(s, m.id)?.cache?.write || 0), 0), 0)
+    },
+    cost: {
+      total: totalCost,
+      avgPerSession: totalSessions > 0 ? totalCost / totalSessions : 0,
+      avgPerMessage: totalMessages > 0 ? totalCost / totalMessages : 0
+    },
+    models,
+    sessions: summary ? undefined : sessionsArray.map(s => ({
+      id: s.id,
+      title: s.title,
+      directory: s.directory,
+      startTime: formatTimestamp(s.startTime),
+      endTime: formatTimestamp(s.endTime),
+      messages: s.messages.length,
+      tokens: s.tokens,
+      cost: s.cost,
+      model: getPrimaryModel(s)
+    }))
+  };
+}
+
+async function analyzeUsageFromJson(options: AnalyzeOptions): Promise<AnalysisResult> {
   const { days = 7, model, project, projectExact = false, summary = false, reverse = false, currentOnly = false, currentPath } = options;
 
   const sessions = [];
   const messageDir = path.join(OPENCODE_STORAGE_PATH, 'message');
   const sessionDir = path.join(OPENCODE_STORAGE_PATH, 'session');
+
+  if (!fs.existsSync(messageDir)) {
+    return {
+      totalSessions: 0,
+      totalMessages: 0,
+      dateRange: { start: 'N/A', end: 'N/A' },
+      tokens: { input: 0, output: 0, reasoning: 0, cacheRead: 0, cacheWrite: 0 },
+      cost: { total: 0, avgPerSession: 0, avgPerMessage: 0 },
+      models: [],
+      sessions: []
+    };
+  }
 
   const sessionDirs = fs.readdirSync(messageDir, { withFileTypes: true })
     .filter(dirent => dirent.isDirectory())
@@ -337,11 +552,123 @@ export async function analyzeUsage(options: AnalyzeOptions = {}): Promise<Analys
 }
 
 export async function analyzeDailyUsage(options: AnalyzeOptions = {}): Promise<DailyData[]> {
+  if (hasNewDbFormat()) {
+    return analyzeDailyUsageFromSqlite(options);
+  }
+  if (hasOldJsonFormat()) {
+    return analyzeDailyUsageFromJson(options);
+  }
+  return [];
+}
+
+async function analyzeDailyUsageFromSqlite(options: AnalyzeOptions): Promise<DailyData[]> {
+  const { days = 7, model, project, projectExact = false, currentOnly = false, currentPath } = options;
+
+  const cutoffTime = Date.now() - (days * 24 * 60 * 60 * 1000);
+  const sessionMap = getSessionMap();
+  const messages = getMessagesByTimeRange(cutoffTime, Date.now());
+  const dailyData = new Map<string, DailyData>();
+
+  for (const msgRow of messages) {
+    const msgData = parseMessageData(msgRow);
+    const sessionId = msgRow.session_id;
+    const sessionInfo = sessionMap.get(sessionId);
+
+    if (!sessionInfo) continue;
+
+    const createdTime = msgData.time?.created || msgRow.time_created;
+    const projectName = sessionInfo.directory || 'unknown';
+
+    if (createdTime < cutoffTime) continue;
+
+    if (model && msgData.modelID && !msgData.modelID.toLowerCase().includes(model.toLowerCase())) {
+      continue;
+    }
+
+    if (project && msgData.path?.root && !msgData.path.root.toLowerCase().includes(project.toLowerCase())) {
+      continue;
+    }
+
+    if (currentOnly && msgData.path?.root) {
+      const workingDir = (currentPath || process.cwd()).toLowerCase();
+      const msgPath = msgData.path.root.toLowerCase();
+      const workingDirWithSlash = workingDir.endsWith('/') ? workingDir : workingDir + '/';
+      const msgPathWithSlash = msgPath.endsWith('/') ? msgPath : msgPath + '/';
+
+      if (!msgPathWithSlash.startsWith(workingDirWithSlash) &&
+          !workingDirWithSlash.startsWith(msgPathWithSlash)) {
+        continue;
+      }
+    }
+
+    if (msgData.role === 'assistant') {
+      const dateKey = formatTimestamp(createdTime);
+      const cacheCreate = msgData.tokens?.cache?.write || 0;
+      const cacheRead = msgData.tokens?.cache?.read || 0;
+      const input = msgData.tokens?.input || 0;
+      const output = msgData.tokens?.output || 0;
+      const cost = msgData.cost || 0;
+
+      if (!dailyData.has(dateKey)) {
+        dailyData.set(dateKey, {
+          date: dateKey,
+          project: options.groupByProject ? projectName : undefined,
+          inputTokens: 0,
+          outputTokens: 0,
+          cacheCreationTokens: 0,
+          cacheReadTokens: 0,
+          totalCost: 0,
+          modelsUsed: [],
+          modelBreakdowns: []
+        });
+      }
+
+      const dayData = dailyData.get(dateKey)!;
+      dayData.inputTokens += input;
+      dayData.outputTokens += output;
+      dayData.cacheCreationTokens += cacheCreate;
+      dayData.cacheReadTokens += cacheRead;
+      dayData.totalCost += cost;
+
+      if (msgData.modelID && !dayData.modelsUsed.includes(msgData.modelID)) {
+        dayData.modelsUsed.push(msgData.modelID);
+      }
+
+      if (msgData.modelID) {
+        let breakdown = dayData.modelBreakdowns.find(b => b.modelName === msgData.modelID);
+        if (!breakdown) {
+          breakdown = {
+            modelName: msgData.modelID,
+            inputTokens: 0,
+            outputTokens: 0,
+            cacheCreationTokens: 0,
+            cacheReadTokens: 0,
+            cost: 0
+          };
+          dayData.modelBreakdowns.push(breakdown);
+        }
+        breakdown.inputTokens += input;
+        breakdown.outputTokens += output;
+        breakdown.cacheCreationTokens += cacheCreate;
+        breakdown.cacheReadTokens += cacheRead;
+        breakdown.cost += cost;
+      }
+    }
+  }
+
+  return Array.from(dailyData.values()).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+async function analyzeDailyUsageFromJson(options: AnalyzeOptions): Promise<DailyData[]> {
   const { days = 7, model, project, projectExact = false, currentOnly = false, currentPath } = options;
 
   const sessions = [];
   const messageDir = path.join(OPENCODE_STORAGE_PATH, 'message');
   const sessionDir = path.join(OPENCODE_STORAGE_PATH, 'session');
+
+  if (!fs.existsSync(messageDir)) {
+    return [];
+  }
 
   const sessionDirs = fs.readdirSync(messageDir, { withFileTypes: true })
     .filter(dirent => dirent.isDirectory())
@@ -452,11 +779,125 @@ export async function analyzeDailyUsage(options: AnalyzeOptions = {}): Promise<D
 }
 
 export async function analyzeMonthlyUsage(options: AnalyzeOptions = {}): Promise<MonthlyData[]> {
+  if (hasNewDbFormat()) {
+    return analyzeMonthlyUsageFromSqlite(options);
+  }
+  if (hasOldJsonFormat()) {
+    return analyzeMonthlyUsageFromJson(options);
+  }
+  return [];
+}
+
+async function analyzeMonthlyUsageFromSqlite(options: AnalyzeOptions): Promise<MonthlyData[]> {
+  const { days = 30, model, project, projectExact = false, currentOnly = false, currentPath } = options;
+
+  const cutoffTime = Date.now() - (days * 24 * 60 * 60 * 1000);
+  const sessionMap = getSessionMap();
+  const messages = getMessagesByTimeRange(cutoffTime, Date.now());
+  const monthlyData = new Map<string, MonthlyData>();
+
+  for (const msgRow of messages) {
+    const msgData = parseMessageData(msgRow);
+    const sessionId = msgRow.session_id;
+    const sessionInfo = sessionMap.get(sessionId);
+
+    if (!sessionInfo) continue;
+
+    const createdTime = msgData.time?.created || msgRow.time_created;
+    const projectName = sessionInfo.directory || 'unknown';
+
+    if (createdTime < cutoffTime) continue;
+
+    if (model && msgData.modelID && !msgData.modelID.toLowerCase().includes(model.toLowerCase())) {
+      continue;
+    }
+
+    if (project && msgData.path?.root && !msgData.path.root.toLowerCase().includes(project.toLowerCase())) {
+      continue;
+    }
+
+    if (currentOnly && msgData.path?.root) {
+      const workingDir = (currentPath || process.cwd()).toLowerCase();
+      const msgPath = msgData.path.root.toLowerCase();
+      const workingDirWithSlash = workingDir.endsWith('/') ? workingDir : workingDir + '/';
+      const msgPathWithSlash = msgPath.endsWith('/') ? msgPath : msgPath + '/';
+
+      if (!msgPathWithSlash.startsWith(workingDirWithSlash) &&
+          !workingDirWithSlash.startsWith(msgPathWithSlash)) {
+        continue;
+      }
+    }
+
+    if (msgData.role === 'assistant') {
+      const date = new Date(createdTime);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+      const cacheCreate = msgData.tokens?.cache?.write || 0;
+      const cacheRead = msgData.tokens?.cache?.read || 0;
+      const input = msgData.tokens?.input || 0;
+      const output = msgData.tokens?.output || 0;
+      const cost = msgData.cost || 0;
+
+      if (!monthlyData.has(monthKey)) {
+        monthlyData.set(monthKey, {
+          month: monthKey,
+          project: options.groupByProject ? projectName : undefined,
+          inputTokens: 0,
+          outputTokens: 0,
+          cacheCreationTokens: 0,
+          cacheReadTokens: 0,
+          totalCost: 0,
+          modelsUsed: [],
+          modelBreakdowns: []
+        });
+      }
+
+      const monthData = monthlyData.get(monthKey)!;
+      monthData.inputTokens += input;
+      monthData.outputTokens += output;
+      monthData.cacheCreationTokens += cacheCreate;
+      monthData.cacheReadTokens += cacheRead;
+      monthData.totalCost += cost;
+
+      if (msgData.modelID && !monthData.modelsUsed.includes(msgData.modelID)) {
+        monthData.modelsUsed.push(msgData.modelID);
+      }
+
+      if (msgData.modelID) {
+        let breakdown = monthData.modelBreakdowns.find(b => b.modelName === msgData.modelID);
+        if (!breakdown) {
+          breakdown = {
+            modelName: msgData.modelID,
+            inputTokens: 0,
+            outputTokens: 0,
+            cacheCreationTokens: 0,
+            cacheReadTokens: 0,
+            cost: 0
+          };
+          monthData.modelBreakdowns.push(breakdown);
+        }
+        breakdown.inputTokens += input;
+        breakdown.outputTokens += output;
+        breakdown.cacheCreationTokens += cacheCreate;
+        breakdown.cacheReadTokens += cacheRead;
+        breakdown.cost += cost;
+      }
+    }
+  }
+
+  return Array.from(monthlyData.values()).sort((a, b) => a.month.localeCompare(b.month));
+}
+
+async function analyzeMonthlyUsageFromJson(options: AnalyzeOptions): Promise<MonthlyData[]> {
   const { days = 30, model, project, projectExact = false, currentOnly = false, currentPath } = options;
 
   const sessions = [];
   const messageDir = path.join(OPENCODE_STORAGE_PATH, 'message');
   const sessionDir = path.join(OPENCODE_STORAGE_PATH, 'session');
+
+  if (!fs.existsSync(messageDir)) {
+    return [];
+  }
 
   const sessionDirs = fs.readdirSync(messageDir, { withFileTypes: true })
     .filter(dirent => dirent.isDirectory())

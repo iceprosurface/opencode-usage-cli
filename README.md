@@ -261,53 +261,105 @@ By Path (when using --instances):
 
 ## Data Source
 
-The tool reads OpenCode session data from:
+This tool automatically detects and supports both new and old OpenCode data formats:
+
+### New Format (SQLite) - Recommended
+- Database: `~/.local/share/opencode/opencode.db`
+- Used by OpenCode v2.0+ (February 2026+)
+- Faster queries with SQLite indexes
+- Single database file
+
+### Legacy Format (JSON) - Backward Compatible
 - Messages: `~/.local/share/opencode/storage/message/`
 - Sessions: `~/.local/share/opencode/storage/session/`
+- Used by older OpenCode versions
+
+The tool will automatically use SQLite if available, falling back to JSON files otherwise.
 
 ## OpenCode Integration
 
-You can create a custom slash command in OpenCode to view usage statistics directly.
+You can integrate this tool as an OpenCode skill for easy access.
 
 ### Quick Setup
 
-1. Create the global command directory:
+1. Create the skill directory:
 
 ```bash
-mkdir -p ~/.config/opencode/command
+mkdir -p ~/.config/opencode/skills/opencode-usage
 ```
 
-2. Create an `opencode-usage.md` file with the following content:
+2. Create `SKILL.md` file:
 
 ```bash
-cat > ~/.config/opencode/command/opencode-usage.md << 'EOF'
+cat > ~/.config/opencode/skills/opencode-usage/SKILL.md << 'EOF'
 ---
-description: Show OpenCode usage statistics
-arguments: $1 (command, optional) $2 (options, optional)
+name: opencode-usage
+description: Show OpenCode usage statistics and cost analysis
+license: MIT
 ---
 
-Usage examples:
-  - analyze: Overall summary
-  - daily: Daily breakdown
-  - monthly: Monthly breakdown
+## What I do
 
-!\`npx opencode-usage-cli $1 $2\`
+Analyze OpenCode session token usage and costs:
+- Overall summary (analyze)
+- Daily breakdown (daily)
+- Monthly breakdown (monthly)
+
+## When to use me
+
+Use this skill when the user asks about:
+- Usage statistics
+- Token consumption
+- Cost analysis
+- Model usage breakdown
+
+## Commands
+
+```bash
+npx opencode-usage-cli <command> [options]
+```
+
+| Command | Description |
+|---------|-------------|
+| analyze | Overall summary (default 7 days) |
+| daily | Daily report |
+| monthly | Monthly report |
+
+| Option | Description |
+|--------|-------------|
+| -d, --days <n> | Time range in days |
+| -m, --model <pattern> | Filter by model |
+| --breakdown | Show model breakdown |
+| --instances | Group by project |
+| --current-only | Current directory only |
+
+## Examples
+
+```bash
+# 7-day summary
+npx opencode-usage-cli analyze
+
+# 30-day summary
+npx opencode-usage-cli analyze -d 30
+
+# Daily with model breakdown
+npx opencode-usage-cli daily --breakdown
+
+# By project
+npx opencode-usage-cli daily --instances
+```
 EOF
 ```
 
-3. Now you can use the `/opencode-usage` command directly in OpenCode TUI!
+3. Restart OpenCode or start a new session.
 
-```bash
-/opencode-usage                          # Overall summary (last 7 days)
-/opencode-usage daily                     # Daily breakdown (last 7 days)
-/opencode-usage daily --breakdown         # Daily with model breakdown
-/opencode-usage daily -m claude --breakdown --instances  # Daily by model and project
-/opencode-usage monthly                   # Monthly breakdown
-/opencode-usage monthly --instances       # Monthly by project
-/opencode-usage analyze -d 30             # Overall summary (last 30 days)
-```
+4. Now you can simply ask:
+   - "查看使用统计"
+   - "今天用了多少 token"
+   - "Show usage report"
+   - "Cost analysis for this month"
 
-**Note:** The `/opencode-usage` slash command uses `npx opencode-usage-cli` internally, so it works without global installation.
+OpenCode will automatically load the skill and execute the appropriate commands.
 
 ## License
 

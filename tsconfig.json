@@ -12,9 +12,9 @@
     "declaration": true,
     "declarationMap": true,
     "outDir": "./dist",
-    "rootDir": ".",
+    "rootDir": "./src",
     "allowSyntheticDefaultImports": true
   },
-  "include": ["cli.ts", "analyzer.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

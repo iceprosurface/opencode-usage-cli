@@ -261,53 +261,105 @@ By Path (when using --instances):
 
 ## 数据来源
 
-该工具从以下位置读取 OpenCode 会话数据：
+本工具自动检测并支持新旧两种 OpenCode 数据格式：
+
+### 新格式（SQLite）- 推荐
+- 数据库：`~/.local/share/opencode/opencode.db`
+- 用于 OpenCode v2.0+（2026年2月及以后）
+- SQLite 索引加速查询，性能更好
+- 单一数据库文件
+
+### 旧格式（JSON）- 向后兼容
 - 消息：`~/.local/share/opencode/storage/message/`
 - 会话：`~/.local/share/opencode/storage/session/`
+- 用于旧版 OpenCode
+
+工具会自动优先使用 SQLite，如果不存在则回退到 JSON 文件。
 
 ## OpenCode 集成
 
-你可以在 OpenCode 中创建自定义 slash 命令来直接查看使用统计。
+你可以将此工具集成为 OpenCode skill，方便随时调用。
 
-### 快速设置
+### 快速配置
 
-1. 创建全局命令目录：
+1. 创建 skill 目录：
 
 ```bash
-mkdir -p ~/.config/opencode/command
+mkdir -p ~/.config/opencode/skills/opencode-usage
 ```
 
-2. 创建 `opencode-usage.md` 文件，内容如下：
+2. 创建 `SKILL.md` 文件：
 
 ```bash
-cat > ~/.config/opencode/command/opencode-usage.md << 'EOF'
+cat > ~/.config/opencode/skills/opencode-usage/SKILL.md << 'EOF'
 ---
-description: 显示 OpenCode 使用统计
-arguments: $1 (命令, 可选) $2 (选项, 可选)
+name: opencode-usage
+description: 显示 OpenCode 使用统计和成本分析
+license: MIT
 ---
 
-使用示例：
-  - analyze: 总体摘要
-  - daily: 每日明细
-  - monthly: 每月明细
+## 功能
 
-!\`npx opencode-usage-cli $1 $2\`
+分析 OpenCode 会话 token 使用量和成本：
+- 总体摘要（analyze）
+- 每日报告（daily）
+- 每月报告（monthly）
+
+## 使用场景
+
+当用户询问以下内容时使用此 skill：
+- 使用统计
+- token 消耗
+- 成本分析
+- 模型使用情况
+
+## 命令
+
+```bash
+npx opencode-usage-cli <command> [options]
+```
+
+| 命令 | 说明 |
+|------|------|
+| analyze | 总体摘要（默认 7 天） |
+| daily | 每日报告 |
+| monthly | 每月报告 |
+
+| 选项 | 说明 |
+|------|------|
+| -d, --days <n> | 时间范围（天） |
+| -m, --model <pattern> | 按模型过滤 |
+| --breakdown | 显示模型明细 |
+| --instances | 按项目分组 |
+| --current-only | 仅当前目录 |
+
+## 示例
+
+```bash
+# 7 天摘要
+npx opencode-usage-cli analyze
+
+# 30 天摘要
+npx opencode-usage-cli analyze -d 30
+
+# 每日报告 + 模型明细
+npx opencode-usage-cli daily --breakdown
+
+# 按项目分组
+npx opencode-usage-cli daily --instances
+```
 EOF
 ```
 
-3. 现在你可以直接在 OpenCode TUI 中使用 `/opencode-usage` 命令了！
+3. 重启 OpenCode 或开始新会话。
 
-```bash
-/opencode-usage                          # 总体摘要（最近 7 天）
-/opencode-usage daily                     # 每日明细（最近 7 天）
-/opencode-usage daily --breakdown         # 每日明细 + 模型分组
-/opencode-usage daily -m claude --breakdown --instances  # 每日明细（按模型和项目）
-/opencode-usage monthly                   # 每月明细
-/opencode-usage monthly --instances       # 每月明细（按项目）
-/opencode-usage analyze -d 30             # 总体摘要（最近 30 天）
-```
+4. 现在可以直接用自然语言询问：
+   - "查看使用统计"
+   - "今天用了多少 token"
+   - "这个月的成本分析"
+   - "Show usage report"
 
-**注意：** `/opencode-usage` slash 命令内部使用 `npx opencode-usage-cli`，因此无需全局安装即可使用。
+OpenCode 会自动加载 skill 并执行相应命令。
 
 ## 许可证
 
