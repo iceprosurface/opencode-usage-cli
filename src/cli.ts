@@ -18,13 +18,14 @@ import {
   generateHeatmapPng,
   type HeatmapData
 } from './heatmap.js';
+import packageJson from '../package.json' with { type: 'json' };
 
 const program = new Command();
 
 program
   .name('opencode-usage')
   .description('Analyze OpenCode session usage and costs')
-  .version('1.0.0');
+  .version(packageJson.version);
 
 program
   .command('analyze')
