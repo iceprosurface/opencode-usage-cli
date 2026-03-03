@@ -5,7 +5,8 @@
   "type": "module",
   "main": "./dist/analyzer.js",
   "bin": {
-    "opencode-usage": "./dist/cli.js"
+    "opencode-usage": "./dist/cli.js",
+    "opencode-usage-cli": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsup",

@@ -32,166 +32,170 @@ npm install opencode-usage-cli
 
 ## Usage
 
-Using `npx opencode-usage-cli` (no installation required) or globally installed `opencode-usage` command.
+The two entry commands are now unified and equivalent:
+
+- No install: `npx --yes opencode-usage-cli <command> [options]`
+- Global install (recommended): `opencode-usage <command> [options]`
+- Fallback alias after global install: `opencode-usage-cli <command> [options]`
 
 ### Analyze Usage (Last 7 days)
 
 ```bash
-npx opencode-usage-cli analyze
+npx --yes opencode-usage-cli analyze
 ```
 
 ### Filter by Time Range
 
 ```bash
 # Last 30 days
-npx opencode-usage-cli analyze -d 30
+npx --yes opencode-usage-cli analyze -d 30
 
 # Last 90 days
-npx opencode-usage-cli analyze --days 90
+npx --yes opencode-usage-cli analyze --days 90
 ```
 
 ### Filter by Model
 
 ```bash
 # Only Claude Sonnet
-npx opencode-usage-cli analyze -m sonnet
+npx --yes opencode-usage-cli analyze -m sonnet
 
 # Only Haiku
-npx opencode-usage-cli analyze --model haiku
+npx --yes opencode-usage-cli analyze --model haiku
 ```
 
 ### Filter by Project Path
 
 ```bash
 # Pattern match (default) - matches any path containing the pattern
-npx opencode-usage-cli analyze -p github
-npx opencode-usage-cli analyze --project my-app
+npx --yes opencode-usage-cli analyze -p github
+npx --yes opencode-usage-cli analyze --project my-app
 
 # Exact path match - matches the specific directory path
-npx opencode-usage-cli analyze -p /Users/yourname/projects/my-app --exact-path
-npx opencode-usage-cli analyze -p ~/projects/my-app --exact-path
+npx --yes opencode-usage-cli analyze -p /Users/yourname/projects/my-app --exact-path
+npx --yes opencode-usage-cli analyze -p ~/projects/my-app --exact-path
 
 # Use with instances to see breakdown
-npx opencode-usage-cli analyze -p ~/projects/my-app --exact-path --instances
+npx --yes opencode-usage-cli analyze -p ~/projects/my-app --exact-path --instances
 ```
 
 ### Filter by Current Working Directory
 
 ```bash
 # Only show sessions from current working directory
-npx opencode-usage-cli analyze --current-only
-npx opencode-usage-cli daily --current-only
-npx opencode-usage-cli monthly --current-only
+npx --yes opencode-usage-cli analyze --current-only
+npx --yes opencode-usage-cli daily --current-only
+npx --yes opencode-usage-cli monthly --current-only
 
 # Combine with time range
-npx opencode-usage-cli analyze -d 30 --current-only
+npx --yes opencode-usage-cli analyze -d 30 --current-only
 ```
 
 ### Show Session Breakdown
 
 ```bash
-npx opencode-usage-cli analyze --sessions
+npx --yes opencode-usage-cli analyze --sessions
 ```
 
 ### Group by Path/Instance
 
 ```bash
 # Analyze command - show usage breakdown by project path
-npx opencode-usage-cli analyze --instances
+npx --yes opencode-usage-cli analyze --instances
 
 # Daily report - show usage breakdown by project path
-npx opencode-usage-cli daily --instances
+npx --yes opencode-usage-cli daily --instances
 
 # Monthly report - show usage breakdown by project path
-npx opencode-usage-cli monthly --instances
+npx --yes opencode-usage-cli monthly --instances
 
 # Combine with other filters
-npx opencode-usage-cli analyze -d 30 -m sonnet --instances
+npx --yes opencode-usage-cli analyze -d 30 -m sonnet --instances
 
 # Combine with exact path matching
-npx opencode-usage-cli analyze -p /Users/yourname/projects/my-app --exact-path --instances
+npx --yes opencode-usage-cli analyze -p /Users/yourname/projects/my-app --exact-path --instances
 ```
 
 ### Export Formats
 
 ```bash
 # JSON output
-npx opencode-usage-cli analyze --json > usage.json
+npx --yes opencode-usage-cli analyze --json > usage.json
 
 # CSV output
-npx opencode-usage-cli analyze --csv > usage.csv
+npx --yes opencode-usage-cli analyze --csv > usage.csv
 ```
 
 ### Daily Report
 
 ```bash
 # Last 7 days (default)
-npx opencode-usage-cli daily
+npx --yes opencode-usage-cli daily
 
 # Last 30 days
-npx opencode-usage-cli daily -d 30
+npx --yes opencode-usage-cli daily -d 30
 
 # With model breakdown
-npx opencode-usage-cli daily --breakdown
+npx --yes opencode-usage-cli daily --breakdown
 
 # Group by project/instance
-npx opencode-usage-cli daily --instances
+npx --yes opencode-usage-cli daily --instances
 ```
 
 ### Monthly Report
 
 ```bash
 # Last 30 days (default)
-npx opencode-usage-cli monthly
+npx --yes opencode-usage-cli monthly
 
 # Last 90 days
-npx opencode-usage-cli monthly -d 90
+npx --yes opencode-usage-cli monthly -d 90
 
 # With model breakdown
-npx opencode-usage-cli monthly --breakdown
+npx --yes opencode-usage-cli monthly --breakdown
 
 # Group by project/instance
-npx opencode-usage-cli monthly --instances
+npx --yes opencode-usage-cli monthly --instances
 ```
 
 ### Overall Summary
 
 ```bash
-npx opencode-usage-cli summary -d 30
+npx --yes opencode-usage-cli summary -d 30
 ```
 
 ### Usage Heatmap (GitHub-style)
 
 ```bash
 # Terminal heatmap (last year)
-npx opencode-usage-cli heatmap
+npx --yes opencode-usage-cli heatmap
 
 # Last 30 days
-npx opencode-usage-cli heatmap -d 30
+npx --yes opencode-usage-cli heatmap -d 30
 
 # Export as SVG
-npx opencode-usage-cli heatmap --svg heatmap.svg
+npx --yes opencode-usage-cli heatmap --svg heatmap.svg
 
 # Export as PNG (requires: npm install sharp)
-npx opencode-usage-cli heatmap --png heatmap.png
+npx --yes opencode-usage-cli heatmap --png heatmap.png
 
 # Filter by metric (tokens, cost, messages)
-npx opencode-usage-cli heatmap --metric cost
+npx --yes opencode-usage-cli heatmap --metric cost
 
 # JSON output
-npx opencode-usage-cli heatmap --json
+npx --yes opencode-usage-cli heatmap --json
 ```
 
 ### Reverse Sort (Oldest First)
 
 ```bash
-npx opencode-usage-cli analyze --reverse
+npx --yes opencode-usage-cli analyze --reverse
 ```
 
 ### Help
 
 ```bash
-npx opencode-usage-cli --help
+npx --yes opencode-usage-cli --help
 ```
 
 ## Example Output
@@ -364,7 +368,7 @@ Use this skill when the user asks about:
 ## Commands
 
 ```bash
-npx opencode-usage-cli <command> --json [options]
+npx --yes opencode-usage-cli <command> --json [options]
 ```
 
 > **Important**: Always use `--json` flag when calling as AI, to get structured data for easy parsing.
@@ -388,16 +392,16 @@ npx opencode-usage-cli <command> --json [options]
 
 ```bash
 # 7-day summary (AI call)
-npx opencode-usage-cli analyze --json
+npx --yes opencode-usage-cli analyze --json
 
 # 30-day summary
-npx opencode-usage-cli analyze --json -d 30
+npx --yes opencode-usage-cli analyze --json -d 30
 
 # Daily with model breakdown
-npx opencode-usage-cli daily --json --breakdown
+npx --yes opencode-usage-cli daily --json --breakdown
 
 # By project
-npx opencode-usage-cli daily --json --instances
+npx --yes opencode-usage-cli daily --json --instances
 ```
 EOF
 ```

@@ -32,166 +32,170 @@ npm install opencode-usage-cli
 
 ## 使用方法
 
-使用 `npx opencode-usage-cli`（无需安装）或全局安装后的 `opencode-usage` 命令。
+两种入口命令现已统一为等价用法：
+
+- 无需安装：`npx --yes opencode-usage-cli <command> [options]`
+- 全局安装（推荐）：`opencode-usage <command> [options]`
+- 兼容 fallback：全局安装后也支持 `opencode-usage-cli <command> [options]`
 
 ### 分析使用情况（最近 7 天）
 
 ```bash
-npx opencode-usage-cli analyze
+npx --yes opencode-usage-cli analyze
 ```
 
 ### 按时间范围过滤
 
 ```bash
 # 最近 30 天
-npx opencode-usage-cli analyze -d 30
+npx --yes opencode-usage-cli analyze -d 30
 
 # 最近 90 天
-npx opencode-usage-cli analyze --days 90
+npx --yes opencode-usage-cli analyze --days 90
 ```
 
 ### 按模型过滤
 
 ```bash
 # 仅 Claude Sonnet
-npx opencode-usage-cli analyze -m sonnet
+npx --yes opencode-usage-cli analyze -m sonnet
 
 # 仅 Haiku
-npx opencode-usage-cli analyze --model haiku
+npx --yes opencode-usage-cli analyze --model haiku
 ```
 
 ### 按项目路径过滤
 
 ```bash
 # 模式匹配（默认）- 匹配包含该模式的任何路径
-npx opencode-usage-cli analyze -p github
-npx opencode-usage-cli analyze --project my-app
+npx --yes opencode-usage-cli analyze -p github
+npx --yes opencode-usage-cli analyze --project my-app
 
 # 精确路径匹配 - 匹配特定的目录路径
-npx opencode-usage-cli analyze -p /Users/yourname/projects/my-app --exact-path
-npx opencode-usage-cli analyze -p ~/projects/my-app --exact-path
+npx --yes opencode-usage-cli analyze -p /Users/yourname/projects/my-app --exact-path
+npx --yes opencode-usage-cli analyze -p ~/projects/my-app --exact-path
 
 # 与实例结合使用查看明细
-npx opencode-usage-cli analyze -p ~/projects/my-app --exact-path --instances
+npx --yes opencode-usage-cli analyze -p ~/projects/my-app --exact-path --instances
 ```
 
 ### 按当前工作目录过滤
 
 ```bash
 # 仅显示当前工作目录的会话
-npx opencode-usage-cli analyze --current-only
-npx opencode-usage-cli daily --current-only
-npx opencode-usage-cli monthly --current-only
+npx --yes opencode-usage-cli analyze --current-only
+npx --yes opencode-usage-cli daily --current-only
+npx --yes opencode-usage-cli monthly --current-only
 
 # 与时间范围结合使用
-npx opencode-usage-cli analyze -d 30 --current-only
+npx --yes opencode-usage-cli analyze -d 30 --current-only
 ```
 
 ### 显示会话明细
 
 ```bash
-npx opencode-usage-cli analyze --sessions
+npx --yes opencode-usage-cli analyze --sessions
 ```
 
 ### 按路径/实例分组
 
 ```bash
 # 分析命令 - 按项目路径显示使用情况明细
-npx opencode-usage-cli analyze --instances
+npx --yes opencode-usage-cli analyze --instances
 
 # 每日报告 - 按项目路径显示使用情况明细
-npx opencode-usage-cli daily --instances
+npx --yes opencode-usage-cli daily --instances
 
 # 每月报告 - 按项目路径显示使用情况明细
-npx opencode-usage-cli monthly --instances
+npx --yes opencode-usage-cli monthly --instances
 
 # 与其他过滤器结合使用
-npx opencode-usage-cli analyze -d 30 -m sonnet --instances
+npx --yes opencode-usage-cli analyze -d 30 -m sonnet --instances
 
 # 与精确路径匹配结合使用
-npx opencode-usage-cli analyze -p /Users/yourname/projects/my-app --exact-path --instances
+npx --yes opencode-usage-cli analyze -p /Users/yourname/projects/my-app --exact-path --instances
 ```
 
 ### 导出格式
 
 ```bash
 # JSON 输出
-npx opencode-usage-cli analyze --json > usage.json
+npx --yes opencode-usage-cli analyze --json > usage.json
 
 # CSV 输出
-npx opencode-usage-cli analyze --csv > usage.csv
+npx --yes opencode-usage-cli analyze --csv > usage.csv
 ```
 
 ### 每日报告
 
 ```bash
 # 最近 7 天（默认）
-npx opencode-usage-cli daily
+npx --yes opencode-usage-cli daily
 
 # 最近 30 天
-npx opencode-usage-cli daily -d 30
+npx --yes opencode-usage-cli daily -d 30
 
 # 按模型分组
-npx opencode-usage-cli daily --breakdown
+npx --yes opencode-usage-cli daily --breakdown
 
 # 按项目/实例分组
-npx opencode-usage-cli daily --instances
+npx --yes opencode-usage-cli daily --instances
 ```
 
 ### 每月报告
 
 ```bash
 # 最近 30 天（默认）
-npx opencode-usage-cli monthly
+npx --yes opencode-usage-cli monthly
 
 # 最近 90 天
-npx opencode-usage-cli monthly -d 90
+npx --yes opencode-usage-cli monthly -d 90
 
 # 按模型分组
-npx opencode-usage-cli monthly --breakdown
+npx --yes opencode-usage-cli monthly --breakdown
 
 # 按项目/实例分组
-npx opencode-usage-cli monthly --instances
+npx --yes opencode-usage-cli monthly --instances
 ```
 
 ### 总体摘要
 
 ```bash
-npx opencode-usage-cli summary -d 30
+npx --yes opencode-usage-cli summary -d 30
 ```
 
 ### 使用热力图（GitHub 风格）
 
 ```bash
 # 终端热力图（默认一年）
-npx opencode-usage-cli heatmap
+npx --yes opencode-usage-cli heatmap
 
 # 最近 30 天
-npx opencode-usage-cli heatmap -d 30
+npx --yes opencode-usage-cli heatmap -d 30
 
 # 导出为 SVG
-npx opencode-usage-cli heatmap --svg heatmap.svg
+npx --yes opencode-usage-cli heatmap --svg heatmap.svg
 
 # 导出为 PNG（需要：npm install sharp）
-npx opencode-usage-cli heatmap --png heatmap.png
+npx --yes opencode-usage-cli heatmap --png heatmap.png
 
 # 按指标过滤（tokens, cost, messages）
-npx opencode-usage-cli heatmap --metric cost
+npx --yes opencode-usage-cli heatmap --metric cost
 
 # JSON 输出
-npx opencode-usage-cli heatmap --json
+npx --yes opencode-usage-cli heatmap --json
 ```
 
 ### 反向排序（从最旧到最新）
 
 ```bash
-npx opencode-usage-cli analyze --reverse
+npx --yes opencode-usage-cli analyze --reverse
 ```
 
 ### 帮助
 
 ```bash
-npx opencode-usage-cli --help
+npx --yes opencode-usage-cli --help
 ```
 
 ## 示例输出
@@ -364,7 +368,7 @@ license: MIT
 ## 命令
 
 ```bash
-npx opencode-usage-cli <command> --json [options]
+npx --yes opencode-usage-cli <command> --json [options]
 ```
 
 > **重要**：作为 AI 调用时，**必须始终使用 `--json` 参数**，以便获得结构化数据，便于解析和展示。
@@ -388,16 +392,16 @@ npx opencode-usage-cli <command> --json [options]
 
 ```bash
 # 7 天摘要（AI 调用）
-npx opencode-usage-cli analyze --json
+npx --yes opencode-usage-cli analyze --json
 
 # 30 天摘要
-npx opencode-usage-cli analyze --json -d 30
+npx --yes opencode-usage-cli analyze --json -d 30
 
 # 每日报告 + 模型明细
-npx opencode-usage-cli daily --json --breakdown
+npx --yes opencode-usage-cli daily --json --breakdown
 
 # 按项目分组
-npx opencode-usage-cli daily --json --instances
+npx --yes opencode-usage-cli daily --json --instances
 ```
 EOF
 ```
