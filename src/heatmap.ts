@@ -541,7 +541,8 @@ export function saveHeatmapSvg(data: HeatmapData, filePath: string, options?: { 
 
 export async function generateHeatmapPng(data: HeatmapData, filePath: string, options?: { width?: number; title?: string }): Promise<void> {
   try {
-    const sharp = await import('sharp');
+    const sharpModuleName = 'sharp';
+    const { default: sharp } = await import(sharpModuleName);
     const svg = generateHeatmapSvg(data, options);
     
     await sharp(Buffer.from(svg))

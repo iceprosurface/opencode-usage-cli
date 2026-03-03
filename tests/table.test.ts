@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { formatNumber, formatNumberWithUnit, formatCurrency, formatModelsDisplay, formatModelsDisplayMultiline, pushBreakdownRows, formatUsageDataRow, formatTotalsRow, createUsageReportTable, addEmptySeparatorRow } from '../table.js';
+import { formatNumber, formatNumberWithUnit, formatCurrency, formatModelsDisplay, formatModelsDisplayMultiline, pushBreakdownRows, formatUsageDataRow, formatTotalsRow, createUsageReportTable, addEmptySeparatorRow } from '../src/table.js';
 
 describe('table.ts - formatNumber', () => {
   it('should format numbers with commas', () => {
